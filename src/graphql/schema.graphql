@@ -1,0 +1,35 @@
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+type Booking {
+  id: ID!
+  resourceId: ID!
+  title: String!
+  startTime: String!
+  endTime: String!
+  status: BookingStatus!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Resource {
+  id: ID!
+  name: String!
+  capacity: Int!
+  createdAt: String!
+  bookings: [Booking!]!
+}
+
+type Query {
+  resources: [Resource!]!
+  resource(id: ID!): Resource
+}
+
+type Mutation {
+  createResource(
+    name: String!
+    capacity: Int!
+  ): Resource!
+}
