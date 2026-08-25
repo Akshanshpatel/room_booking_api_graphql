@@ -14,6 +14,13 @@ type Booking {
   updatedAt: String!
 }
 
+input BookingFilter {
+  resourceId: ID
+  status: BookingStatus
+  from: String
+  to: String
+}
+
 type Resource {
   id: ID!
   name: String!
@@ -25,6 +32,7 @@ type Resource {
 type Query {
   resources: [Resource!]!
   resource(id: ID!): Resource
+  bookings(filter: BookingFilter): [Booking!]!
 }
 
 type Mutation {
@@ -32,4 +40,13 @@ type Mutation {
     name: String!
     capacity: Int!
   ): Resource!
+
+  createBooking(
+    resourceId: ID!
+    title: String!
+    startTime: String!
+    endTime: String!
+  ): Booking!
+
+  cancelBooking(id: ID!): Booking!
 }
