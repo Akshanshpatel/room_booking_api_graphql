@@ -14,6 +14,16 @@ type Booking {
   updatedAt: String!
 }
 
+type PageInfo {
+  nextCursor: String
+  hasNextPage: Boolean!
+}
+
+type BookingConnection {
+  items: [Booking!]!
+  pageInfo: PageInfo!
+}
+
 input BookingFilter {
   resourceId: ID
   status: BookingStatus
@@ -32,7 +42,25 @@ type Resource {
 type Query {
   resources: [Resource!]!
   resource(id: ID!): Resource
-  bookings(filter: BookingFilter): [Booking!]!
+
+  bookings(
+  filter: BookingFilter
+  limit: Int = 10
+  cursor: String
+  ): BookingConnection!
+  
+  availability(
+    resourceId: ID!
+    startTime: String!
+    endTime: String!
+  ): Availability!
+}
+
+type Availability {
+  resourceId: ID!
+  startTime: String!
+  endTime: String!
+  available: Boolean!
 }
 
 type Mutation {
@@ -49,4 +77,12 @@ type Mutation {
   ): Booking!
 
   cancelBooking(id: ID!): Booking!
+
+  rescheduleBooking(
+  id: ID!
+  startTime: String!
+  endTime: String!
+  ): Booking!
+
+  deleteBooking(id: ID!): Boolean!
 }
