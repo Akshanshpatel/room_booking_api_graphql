@@ -44,9 +44,9 @@ type Query {
   resource(id: ID!): Resource
 
   bookings(
-  filter: BookingFilter
-  limit: Int = 10
-  cursor: String
+    filter: BookingFilter
+    limit: Int = 10
+    cursor: String
   ): BookingConnection!
   
   availability(
@@ -79,9 +79,9 @@ type Mutation {
   cancelBooking(id: ID!): Booking!
 
   rescheduleBooking(
-  id: ID!
-  startTime: String!
-  endTime: String!
+    id: ID!
+    startTime: String!
+    endTime: String!
   ): Booking!
 
   deleteBooking(id: ID!): Boolean!

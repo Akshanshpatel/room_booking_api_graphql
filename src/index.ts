@@ -1,6 +1,6 @@
 import { createYoga, createSchema } from "graphql-yoga";
 import { serve } from "bun";
-import { prisma } from "./lib/prisma";
+import { prisma, Prisma } from "./lib/prisma";
 
 const schema = createSchema({
   typeDefs: await Bun.file("src/graphql/schema.graphql").text(),
@@ -84,8 +84,16 @@ const schema = createSchema({
   const hasNextPage = bookings.length > limit;
   const items = bookings.slice(0, limit);
 
+  const formattedItems = items.map((booking) => ({
+  ...booking,
+  startTime: booking.startTime.toISOString(),
+  endTime: booking.endTime.toISOString(),
+  createdAt: booking.createdAt.toISOString(),
+  updatedAt: booking.updatedAt.toISOString(),
+  }));
+
   return {
-    items,
+    items:formattedItems,
     pageInfo: {
       nextCursor: hasNextPage ? items.at(-1)?.id ?? null : null,
       hasNextPage,
@@ -134,18 +142,28 @@ const schema = createSchema({
 
 Mutation: {
   createResource: async (
-    _: unknown,
-    args: { name: string; capacity: number }
-  ) => {
-    return prisma.resource.create({
-      data: {
-        name: args.name,
-        capacity: args.capacity,
-      },
-    });
-  },
+  _: unknown,
+  args: { name: string; capacity: number }
+) => {
+  const name = args.name.trim();
 
-  // f0ed0a20-ccfa-405a-9be3-426e77683edb
+  if (!name) {
+    throw new Error("Resource name is required");
+  }
+
+  if (!Number.isInteger(args.capacity) || args.capacity <= 0) {
+    throw new Error("Capacity must be a positive integer");
+  }
+
+  return prisma.resource.create({
+    data: {
+      name,
+      capacity: args.capacity,
+    },
+  });
+},
+
+  // f0ed0a20-ccfa-405a-9be3-426e77683edb  Booking Room A resource id
 
  createBooking: async (
   _: unknown,
@@ -156,12 +174,30 @@ Mutation: {
     endTime: string;
   }
 ) => {
+  const title=args.title.trim()
+
+  if (!title){
+    throw new Error("Booking title is required");
+  }
+
   const startTime = new Date(args.startTime);
   const endTime = new Date(args.endTime);
 
   if (startTime >= endTime) {
     throw new Error("startTime must be before endTime");
   }
+
+  if (Number.isNaN(startTime.getTime())) {
+  throw new Error("Invalid startTime");
+}
+
+if (Number.isNaN(endTime.getTime())) {
+  throw new Error("Invalid endTime");
+}
+
+if (startTime >= endTime) {
+  throw new Error("startTime must be before endTime");
+}
 
   const resource = await prisma.resource.findUnique({
     where: {
@@ -192,14 +228,25 @@ Mutation: {
     throw new Error("Resource is already booked for this time");
   }
 
-  return prisma.booking.create({
+  try {
+  return await prisma.booking.create({
     data: {
       resourceId: args.resourceId,
-      title: args.title,
+      title,
       startTime,
       endTime,
     },
   });
+} catch (error) {
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2004"
+  ) {
+    throw new Error("Resource is already booked for this time");
+  }
+
+  throw error;
+}
  },
 
  cancelBooking: async (
