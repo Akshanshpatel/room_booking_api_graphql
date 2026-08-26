@@ -1,21 +1,57 @@
-# bun-react-tailwind-shadcn-template
+# Room Booking GraphQL API
 
-To install dependencies:
+A GraphQL API for managing meeting rooms and shared-resource bookings.
 
-```bash
-bun install
-```
+## Tech Stack
 
-To start a development server:
+- Bun
+- TypeScript
+- GraphQL Yoga
+- PostgreSQL
+- Prisma
+- Bun Test
 
-```bash
-bun dev
-```
+## Features
 
-To run for production:
+- Create meeting-room/resources
+- Create bookings
+- Check resource availability
+- Filter bookings
+- Cursor-based booking pagination
+- Reschedule bookings
+- Cancel bookings
+- Delete bookings
+- Prevent overlapping confirmed bookings
+- Allow back-to-back bookings
+- Cancelled bookings do not block time slots
+- PostgreSQL exclusion constraint for concurrency-safe booking
+- Database-backed tests
 
-```bash
-bun start
-```
+## Requirements
 
-This project was created using `bun init` in bun v1.4.0. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+- Bun
+- PostgreSQL
+
+## Setup
+
+Install dependencies:
+
+Run --> bun install
+
+Make a .env file in which DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/DATABASE_NAME"
+
+Run Database Migration --> bunx prisma migrate dev
+
+Start the server --> bun run dev
+
+For Testing --> bun test
+
+
+## Booking Rules
+
+- Only `CONFIRMED` bookings block a resource.
+- `CANCELLED` bookings do not block availability.
+- Booking intervals use `[startTime, endTime)`.
+- Back-to-back bookings are allowed.
+- Overlapping confirmed bookings are rejected.
+- PostgreSQL exclusion constraints prevent concurrent double-booking.
